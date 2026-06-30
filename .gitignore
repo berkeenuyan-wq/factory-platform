@@ -1,0 +1,17 @@
+factory-platform/frontend/node_modules/
+factory-platform/frontend/dist/
+factory-platform/frontend/.env
+factory-platform/frontend/*.tsbuildinfo
+
+factory-platform/backend/**/bin/
+factory-platform/backend/**/obj/
+factory-platform/backend/FactoryPlatform.Api/.env
+factory-platform/backend/FactoryPlatform.Api/storage/
+
+factory-platform/.vs/
+factory-platform/.idea/
+factory-platform/**/*.user
+factory-platform/**/*.suo
+
+outputs/
+work/

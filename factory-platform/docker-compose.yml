@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: factory-platform-postgres
+    environment:
+      POSTGRES_DB: factory_platform
+      POSTGRES_USER: factory_platform
+      POSTGRES_PASSWORD: factory_platform
+    ports:
+      - "5432:5432"
+    volumes:
+      - factory-platform-postgres:/var/lib/postgresql/data
+
+volumes:
+  factory-platform-postgres:
