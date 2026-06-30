@@ -24,6 +24,12 @@ select {
   font: inherit;
 }
 
+input,
+textarea,
+select {
+  color-scheme: dark;
+}
+
 button {
   cursor: pointer;
 }
@@ -233,8 +239,26 @@ p {
   font-size: 0.84rem;
 }
 
-.profile-area {
+.language-picker {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
   margin-left: auto;
+  color: #91a4b7;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.language-picker select {
+  min-height: 34px;
+  border: 1px solid #2f4053;
+  border-radius: 6px;
+  color: #e7edf4;
+  background: #0c141d;
+  padding: 0 10px;
+}
+
+.profile-area {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -325,6 +349,19 @@ p {
 .widget-library button,
 .new-dashboard button {
   justify-content: flex-start;
+}
+
+.widget-library button span {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+}
+
+.widget-library button small {
+  color: #91a4b7;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.25;
 }
 
 .new-dashboard input {
@@ -423,6 +460,140 @@ textarea:disabled {
 
 .widget-content.alarm {
   color: #fbbf24;
+}
+
+.water-widget {
+  display: grid;
+  gap: 12px;
+  min-height: 0;
+  padding: 12px;
+  color: #dbeafe;
+}
+
+.water-widget.loading {
+  align-content: center;
+  justify-items: center;
+  color: #7dd3fc;
+}
+
+.water-widget-summary {
+  align-items: center;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(140px, 1fr) auto auto;
+}
+
+.water-widget-summary div {
+  display: grid;
+  gap: 2px;
+}
+
+.water-widget-summary span,
+.water-widget-summary small,
+.water-tank-card small,
+.water-metric span {
+  color: #91a4b7;
+  font-size: 0.74rem;
+}
+
+.water-widget-summary strong {
+  color: #f8fafc;
+}
+
+.water-widget-summary .alarm-active {
+  align-items: center;
+  background: #351a13;
+  border: 1px solid #7c2d12;
+  border-radius: 6px;
+  color: #fdba74;
+  display: flex;
+  gap: 6px;
+  padding: 6px 8px;
+}
+
+.water-tanks {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.water-tank-card {
+  align-items: center;
+  background: #0b1520;
+  border: 1px solid #203247;
+  border-radius: 7px;
+  display: grid;
+  gap: 9px;
+  grid-template-columns: 34px 1fr;
+  min-width: 0;
+  padding: 10px;
+}
+
+.tank-graphic {
+  align-items: end;
+  background: #07111b;
+  border: 1px solid #2b4962;
+  border-radius: 8px 8px 12px 12px;
+  display: flex;
+  height: 66px;
+  overflow: hidden;
+}
+
+.tank-graphic div {
+  background: linear-gradient(180deg, #67e8f9, #0284c7);
+  box-shadow: 0 0 12px rgba(103, 232, 249, 0.28);
+  width: 100%;
+}
+
+.water-tank-card strong,
+.water-tank-card span,
+.water-tank-card small {
+  display: block;
+}
+
+.water-tank-card span {
+  color: #67e8f9;
+  font-weight: 800;
+}
+
+.water-metrics {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.water-metric {
+  align-items: center;
+  background: #0b1520;
+  border: 1px solid #203247;
+  border-radius: 7px;
+  display: grid;
+  gap: 4px;
+  grid-template-columns: auto 1fr;
+  padding: 9px;
+}
+
+.water-metric strong {
+  color: #f8fafc;
+  grid-column: 1 / -1;
+}
+
+.water-metric.quality-bad {
+  border-color: #7f1d1d;
+}
+
+.water-widget.compact .water-widget-summary {
+  grid-template-columns: 1fr;
+}
+
+.water-widget.compact .water-tanks,
+.water-widget.compact .water-metrics {
+  grid-template-columns: 1fr;
+}
+
+.water-widget.compact .water-tank-card:nth-child(n + 3),
+.water-widget.compact .water-metric:nth-child(n + 3) {
+  display: none;
 }
 
 .layout-editor {
@@ -591,7 +762,9 @@ textarea:disabled {
 .status-pill {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   min-height: 26px;
+  line-height: 1;
   padding: 0 9px;
   border: 1px solid #2f4053;
   border-radius: 999px;
@@ -599,6 +772,7 @@ textarea:disabled {
   background: #0d1e19;
   font-size: 0.78rem;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .row-actions {
@@ -676,6 +850,213 @@ textarea:disabled {
   color: #f8fafc;
 }
 
+.documents-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.document-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(340px, 0.8fr);
+  gap: 18px;
+  min-height: 620px;
+}
+
+.document-panel,
+.document-detail-panel {
+  border: 1px solid #223243;
+  background: #101a25;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.document-filters {
+  align-items: end;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(220px, 1.4fr) repeat(5, minmax(130px, 1fr)) auto;
+  margin-bottom: 14px;
+}
+
+.document-filters label,
+.role-selector label {
+  color: #91a4b7;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.78rem;
+  gap: 6px;
+}
+
+.document-filters label span {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+}
+
+.document-filters input,
+.document-filters select,
+.document-pagination select,
+.document-form input,
+.document-form select,
+.document-form textarea {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid #2f4053;
+  border-radius: 6px;
+  color: #e7edf4;
+  background: #0c141d;
+  outline: none;
+}
+
+.document-filters input,
+.document-filters select,
+.document-pagination select,
+.document-form input,
+.document-form select {
+  padding: 0 10px;
+}
+
+.document-form textarea {
+  min-height: 110px;
+  padding: 10px;
+  resize: vertical;
+}
+
+.document-filters input::placeholder,
+.document-form input::placeholder,
+.document-form textarea::placeholder {
+  color: #64748b;
+}
+
+.document-filters input:focus,
+.document-filters select:focus,
+.document-pagination select:focus,
+.document-form input:focus,
+.document-form select:focus,
+.document-form textarea:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+}
+
+.document-filters option,
+.document-pagination option,
+.document-form option {
+  color: #e7edf4;
+  background: #0c141d;
+}
+
+.document-filters button,
+.document-pagination button {
+  align-items: center;
+  display: inline-flex;
+  gap: 6px;
+  justify-content: center;
+  min-height: 40px;
+  border: 1px solid #2f4053;
+  border-radius: 6px;
+  color: #cbd5e1;
+  background: #14202c;
+  font-weight: 700;
+}
+
+.document-filters button:hover,
+.document-pagination button:hover {
+  border-color: #3b5269;
+  background: #182636;
+}
+
+.document-table-wrap {
+  overflow: auto;
+}
+
+.document-table td:first-child {
+  min-width: 220px;
+}
+
+.document-table td strong,
+.document-table td span {
+  display: block;
+}
+
+.document-table td span {
+  color: #91a4b7;
+  font-size: 0.78rem;
+  margin-top: 3px;
+}
+
+.document-table .status-pill {
+  align-items: center;
+  color: #a7f3d0;
+  display: inline-flex;
+  font-size: 0.78rem;
+  justify-content: center;
+  line-height: 1;
+  margin-top: 0;
+  vertical-align: middle;
+}
+
+.document-pagination {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.document-pagination span {
+  color: #91a4b7;
+  font-size: 0.85rem;
+  margin-right: auto;
+}
+
+.document-form h2,
+.document-confirm h2 {
+  margin: 0 0 14px;
+}
+
+.role-selector {
+  border: 1px solid #223243;
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  margin: 12px 0 0;
+  padding: 12px;
+}
+
+.role-selector legend {
+  color: #91a4b7;
+  font-size: 0.78rem;
+  padding: 0 6px;
+}
+
+.role-selector label {
+  align-items: center;
+  flex-direction: row;
+}
+
+.role-selector input {
+  width: auto;
+}
+
+.document-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.danger-button {
+  background: #3b1518;
+  border-color: #7f2a31;
+  color: #fecaca;
+}
+
+.document-detail .asset-actions {
+  justify-content: flex-end;
+}
+
 @media (max-width: 900px) {
   .app-shell {
     grid-template-columns: 1fr;
@@ -731,7 +1112,12 @@ textarea:disabled {
     grid-template-columns: 1fr;
   }
 
+  .document-workspace {
+    grid-template-columns: 1fr;
+  }
+
   .asset-filters,
+  .document-filters,
   .form-grid,
   .asset-detail dl {
     grid-template-columns: 1fr;

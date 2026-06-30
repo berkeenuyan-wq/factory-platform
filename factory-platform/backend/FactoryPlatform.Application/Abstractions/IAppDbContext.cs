@@ -12,6 +12,9 @@ public interface IAppDbContext
     DbSet<RolePermission> RolePermissions { get; }
     DbSet<Module> Modules { get; }
     DbSet<Asset> Assets { get; }
+    DbSet<Document> Documents { get; }
+    DbSet<DocumentAllowedRole> DocumentAllowedRoles { get; }
+    DbSet<ProcessTag> ProcessTags { get; }
     DbSet<DashboardLayout> DashboardLayouts { get; }
     DbSet<UserSettings> UserSettings { get; }
     DbSet<AuditLog> AuditLogs { get; }

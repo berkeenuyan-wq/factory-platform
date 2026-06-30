@@ -1,1 +1,1 @@
-export const documentsModuleStatus = "under-development";
+export { DocumentsPage } from "./DocumentsPage";

@@ -19,4 +19,20 @@ public sealed class LocalFileStorageService(IConfiguration configuration) : IFil
 
         return path;
     }
+
+    public Task<Stream> OpenReadAsync(string storagePath, CancellationToken cancellationToken = default)
+    {
+        Stream stream = File.OpenRead(storagePath);
+        return Task.FromResult(stream);
+    }
+
+    public Task DeleteAsync(string storagePath, CancellationToken cancellationToken = default)
+    {
+        if (File.Exists(storagePath))
+        {
+            File.Delete(storagePath);
+        }
+
+        return Task.CompletedTask;
+    }
 }

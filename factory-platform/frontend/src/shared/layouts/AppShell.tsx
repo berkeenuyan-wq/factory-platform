@@ -2,6 +2,8 @@ import { LogOut, Menu } from "lucide-react";
 import type { ReactNode } from "react";
 import type { FrontendModule } from "../../app/moduleRegistry";
 import { useAuth } from "../hooks/useAuth";
+import { useLocalization } from "../i18n/LocalizationProvider";
+import { languages, LanguageCode } from "../i18n/translations";
 
 type AppShellProps = {
   modules: FrontendModule[];
@@ -12,18 +14,19 @@ type AppShellProps = {
 
 export function AppShell({ modules, activeRoute, onNavigate, children }: AppShellProps) {
   const { user, logout } = useAuth();
+  const { language, setLanguage, t } = useLocalization();
 
   return (
     <div className="app-shell">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <div className="brand-emblem">FP</div>
+          <div className="brand-emblem">FO</div>
           <div>
-            <strong>Factory Platform</strong>
-            <span>v0.1 foundation</span>
+            <strong>FactoryOS</strong>
+            <span>{t("app.version")}</span>
           </div>
         </div>
-        <nav className="sidebar-nav" aria-label="Main modules">
+        <nav className="sidebar-nav" aria-label={t("app.menu")}>
           {modules.map((module) => {
             const Icon = module.icon;
             return (
@@ -34,7 +37,7 @@ export function AppShell({ modules, activeRoute, onNavigate, children }: AppShel
                 type="button"
               >
                 <Icon size={18} />
-                <span>{module.name}</span>
+                <span>{t(module.nameKey)}</span>
               </button>
             );
           })}
@@ -42,10 +45,18 @@ export function AppShell({ modules, activeRoute, onNavigate, children }: AppShel
       </aside>
       <div className="main-frame">
         <header className="topbar">
-          <button className="icon-button" type="button" aria-label="Menu">
+          <button className="icon-button" type="button" aria-label={t("app.menu")}>
             <Menu size={20} />
           </button>
-          <div className="environment-pill">Internal Factory Network</div>
+          <div className="environment-pill">{t("app.network")}</div>
+          <label className="language-picker">
+            <span>{t("language.label")}</span>
+            <select value={language} onChange={(event) => setLanguage(event.target.value as LanguageCode)}>
+              {languages.map((item) => (
+                <option key={item.code} value={item.code}>{item.label}</option>
+              ))}
+            </select>
+          </label>
           <div className="profile-area">
             <div>
               <strong>{user?.displayName}</strong>
@@ -53,7 +64,7 @@ export function AppShell({ modules, activeRoute, onNavigate, children }: AppShel
             </div>
             <button className="logout-button" onClick={logout} type="button">
               <LogOut size={18} />
-              Logout
+              {t("app.logout")}
             </button>
           </div>
         </header>

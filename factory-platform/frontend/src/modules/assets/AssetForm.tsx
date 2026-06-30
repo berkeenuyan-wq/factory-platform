@@ -1,5 +1,6 @@
 import type { FormEvent } from "react";
 import type { AssetCategory, AssetStatus, UpsertAssetRequest } from "../../shared/api/types";
+import { useLocalization } from "../../shared/i18n/LocalizationProvider";
 
 export const assetCategories: AssetCategory[] = [
   "Machine",
@@ -46,6 +47,7 @@ export function createEmptyAsset(): UpsertAssetRequest {
 }
 
 export function AssetForm({ value, onChange, onSubmit, onCancel, submitLabel }: AssetFormProps) {
+  const { t } = useLocalization();
   function update<K extends keyof UpsertAssetRequest>(key: K, nextValue: UpsertAssetRequest[K]) {
     onChange({ ...value, [key]: nextValue });
   }
@@ -59,15 +61,15 @@ export function AssetForm({ value, onChange, onSubmit, onCancel, submitLabel }: 
     <form className="asset-form" onSubmit={handleSubmit}>
       <div className="form-grid">
         <label>
-          Code
+          {t("assets.code")}
           <input value={value.code} onChange={(event) => update("code", event.target.value)} required />
         </label>
         <label>
-          Name
+          {t("assets.name")}
           <input value={value.name} onChange={(event) => update("name", event.target.value)} required />
         </label>
         <label>
-          Category
+          {t("assets.category")}
           <select value={value.category} onChange={(event) => update("category", event.target.value as AssetCategory)}>
             {assetCategories.map((category) => (
               <option key={category} value={category}>
@@ -77,7 +79,7 @@ export function AssetForm({ value, onChange, onSubmit, onCancel, submitLabel }: 
           </select>
         </label>
         <label>
-          Status
+          {t("common.status")}
           <select value={value.status} onChange={(event) => update("status", event.target.value as AssetStatus)}>
             {assetStatuses.map((status) => (
               <option key={status} value={status}>
@@ -87,24 +89,24 @@ export function AssetForm({ value, onChange, onSubmit, onCancel, submitLabel }: 
           </select>
         </label>
         <label>
-          Area
+          {t("assets.area")}
           <input value={value.area} onChange={(event) => update("area", event.target.value)} />
         </label>
         <label>
-          Manufacturer
+          {t("assets.manufacturer")}
           <input value={value.manufacturer} onChange={(event) => update("manufacturer", event.target.value)} />
         </label>
         <label>
-          Model
+          {t("assets.model")}
           <input value={value.model} onChange={(event) => update("model", event.target.value)} />
         </label>
         <label>
-          Serial Number
+          {t("assets.serialNumber")}
           <input value={value.serialNumber} onChange={(event) => update("serialNumber", event.target.value)} />
         </label>
       </div>
       <label>
-        Notes
+        {t("assets.notes")}
         <textarea value={value.notes} onChange={(event) => update("notes", event.target.value)} />
       </label>
       <div className="form-actions">
@@ -112,7 +114,7 @@ export function AssetForm({ value, onChange, onSubmit, onCancel, submitLabel }: 
           {submitLabel}
         </button>
         <button type="button" onClick={onCancel}>
-          Cancel
+          {t("common.cancel")}
         </button>
       </div>
     </form>

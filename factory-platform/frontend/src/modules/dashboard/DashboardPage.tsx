@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, GripVertical, Library, Plus, Save, Trash2 } from
 import { apiRequest } from "../../shared/api/client";
 import type { DashboardLayout } from "../../shared/api/types";
 import { useAuth } from "../../shared/hooks/useAuth";
+import { useLocalization } from "../../shared/i18n/LocalizationProvider";
 import { widgetRegistry } from "./widgetRegistry";
 
 type DashboardWidgetLayout = {
@@ -10,6 +11,7 @@ type DashboardWidgetLayout = {
   type: string;
   width: 1 | 2 | 4;
   height: 1 | 2;
+  config?: unknown;
 };
 
 type LegacyDashboardWidgetLayout = {
@@ -18,6 +20,7 @@ type LegacyDashboardWidgetLayout = {
   size?: "small" | "medium" | "wide";
   width?: 1 | 2 | 4;
   height?: 1 | 2;
+  config?: unknown;
 };
 
 const selectedDashboardStorageKey = "factory-platform-selected-dashboard";
@@ -26,7 +29,8 @@ const defaultLayout: DashboardWidgetLayout[] = widgetRegistry.map((widget, index
   id: `${widget.type}-${index}`,
   type: widget.type,
   width: widget.defaultWidth,
-  height: widget.defaultHeight
+  height: widget.defaultHeight,
+  config: widget.defaultConfig
 }));
 
 function normalizeWidgetLayout(layout: LegacyDashboardWidgetLayout[]): DashboardWidgetLayout[] {
@@ -34,7 +38,8 @@ function normalizeWidgetLayout(layout: LegacyDashboardWidgetLayout[]): Dashboard
     id: widget.id,
     type: widget.type,
     width: widget.width ?? (widget.size === "wide" ? 4 : widget.size === "medium" ? 2 : 1),
-    height: widget.height ?? 1
+    height: widget.height ?? 1,
+    config: widget.config
   }));
 }
 
@@ -44,13 +49,14 @@ function parseLayout(layoutJson: string) {
 
 export function DashboardPage() {
   const { token, user } = useAuth();
+  const { t } = useLocalization();
   const [dashboards, setDashboards] = useState<DashboardLayout[]>([]);
   const [activeDashboardId, setActiveDashboardId] = useState<string | null>(null);
   const [widgets, setWidgets] = useState<DashboardWidgetLayout[]>(defaultLayout);
   const [rawJson, setRawJson] = useState(JSON.stringify(defaultLayout, null, 2));
   const [newDashboardName, setNewDashboardName] = useState("Operations");
   const [draggedWidgetId, setDraggedWidgetId] = useState<string | null>(null);
-  const [status, setStatus] = useState("Loading dashboards...");
+  const [status, setStatus] = useState(t("dashboard.loading"));
 
   const canEditDashboard = user?.permissions.includes("dashboard.edit") ?? false;
   const registryByType = useMemo(() => new Map(widgetRegistry.map((widget) => [widget.type, widget])), []);
@@ -80,9 +86,9 @@ export function DashboardPage() {
       setWidgets(parsed);
       setRawJson(JSON.stringify(parsed, null, 2));
       localStorage.setItem(selectedDashboardStorageKey, dashboard.id);
-      setStatus(`Loaded ${dashboard.name}.`);
+      setStatus(t("dashboard.loaded", { name: dashboard.name }));
     } catch {
-      setStatus(`${dashboard.name} contains invalid layout JSON.`);
+      setStatus(t("dashboard.invalidJson", { name: dashboard.name }));
     }
   }
 
@@ -105,17 +111,18 @@ export function DashboardPage() {
           id: `${definition.type}-${crypto.randomUUID()}`,
           type: definition.type,
           width: definition.defaultWidth,
-          height: definition.defaultHeight
+          height: definition.defaultHeight,
+          config: definition.defaultConfig
         }
       ],
-      `${definition.title} added.`
+      t("dashboard.widgetAdded", { name: t(definition.titleKey) })
     );
   }
 
   function removeWidget(widgetId: string) {
     updateWidgets(
       widgets.filter((widget) => widget.id !== widgetId),
-      "Widget removed."
+      t("dashboard.widgetRemoved")
     );
   }
 
@@ -136,7 +143,7 @@ export function DashboardPage() {
       return { ...widget, height: heightSteps[Math.max(0, Math.min(heightSteps.length - 1, currentIndex + direction))] };
     });
 
-    updateWidgets(nextWidgets, "Widget resized.");
+    updateWidgets(nextWidgets, t("dashboard.widgetResized"));
   }
 
   function moveWidget(targetWidgetId: string) {
@@ -153,7 +160,7 @@ export function DashboardPage() {
     const nextWidgets = [...widgets];
     const [draggedWidget] = nextWidgets.splice(draggedIndex, 1);
     nextWidgets.splice(targetIndex, 0, draggedWidget);
-    updateWidgets(nextWidgets, "Widget moved.");
+    updateWidgets(nextWidgets, t("dashboard.widgetMoved"));
     setDraggedWidgetId(null);
   }
 
@@ -171,15 +178,15 @@ export function DashboardPage() {
     const nextWidgets = [...widgets];
     const [widget] = nextWidgets.splice(currentIndex, 1);
     nextWidgets.splice(nextIndex, 0, widget);
-    updateWidgets(nextWidgets, "Widget moved.");
+    updateWidgets(nextWidgets, t("dashboard.widgetMoved"));
   }
 
   function applyJson() {
     try {
       const parsed = parseLayout(rawJson);
-      updateWidgets(parsed, "Preview updated from JSON.");
+      updateWidgets(parsed, t("dashboard.previewUpdated"));
     } catch {
-      setStatus("Layout JSON is invalid.");
+      setStatus(t("dashboard.layoutInvalid"));
     }
   }
 
@@ -197,7 +204,7 @@ export function DashboardPage() {
 
     setDashboards((items) => items.map((item) => (item.id === saved.id ? saved : item)));
     setRawJson(layoutJson);
-    setStatus("Dashboard layout saved.");
+    setStatus(t("dashboard.layoutSaved"));
   }
 
   async function createDashboard() {
@@ -217,15 +224,15 @@ export function DashboardPage() {
     setDashboards((items) => [...items, created]);
     loadDashboard(created);
     setNewDashboardName("");
-    setStatus(`${created.name} created.`);
+    setStatus(t("dashboard.created", { name: created.name }));
   }
 
   return (
     <section className="dashboard-page">
       <div className="page-heading dashboard-heading">
         <div>
-          <p className="eyebrow">Dashboard</p>
-          <h1>Editable operations overview</h1>
+          <p className="eyebrow">{t("dashboard.eyebrow")}</p>
+          <h1>{t("dashboard.title")}</h1>
         </div>
         <div className="dashboard-actions">
           <select
@@ -236,7 +243,7 @@ export function DashboardPage() {
                 loadDashboard(selected);
               }
             }}
-            aria-label="Dashboard"
+            aria-label={t("dashboard.dashboard")}
           >
             {dashboards.map((dashboard) => (
               <option key={dashboard.id} value={dashboard.id}>
@@ -246,7 +253,7 @@ export function DashboardPage() {
           </select>
           <button className="primary-button" type="button" onClick={saveLayout} disabled={!canEditDashboard}>
             <Save size={18} />
-            Save Layout
+            {t("dashboard.saveLayout")}
           </button>
         </div>
       </div>
@@ -255,13 +262,16 @@ export function DashboardPage() {
         <aside className="widget-library">
           <div className="panel-title">
             <Library size={18} />
-            <strong>Widget Library</strong>
+            <strong>{t("dashboard.widgetLibrary")}</strong>
           </div>
           <div className="library-list">
             {widgetRegistry.map((widget) => (
               <button key={widget.type} type="button" onClick={() => addWidget(widget.type)} disabled={!canEditDashboard}>
                 <Plus size={16} />
-                {widget.title}
+                <span>
+                  <strong>{t(widget.titleKey)}</strong>
+                  <small>{t(widget.categoryKey)} · {t(widget.descriptionKey)}</small>
+                </span>
               </button>
             ))}
           </div>
@@ -269,12 +279,12 @@ export function DashboardPage() {
             <input
               value={newDashboardName}
               onChange={(event) => setNewDashboardName(event.target.value)}
-              placeholder="Dashboard name"
+              placeholder={t("dashboard.dashboardName")}
               disabled={!canEditDashboard}
             />
             <button type="button" onClick={createDashboard} disabled={!canEditDashboard || !newDashboardName.trim()}>
               <Plus size={16} />
-              New Dashboard
+              {t("dashboard.newDashboard")}
             </button>
           </div>
         </aside>
@@ -299,7 +309,7 @@ export function DashboardPage() {
                   <span className="drag-handle" aria-hidden="true">
                     <GripVertical size={16} />
                   </span>
-                  <strong>{definition.title}</strong>
+                  <strong>{t(definition.titleKey)}</strong>
                   <div className="widget-tools">
                     <button type="button" onClick={() => resizeWidget(layout.id, "width", -1)} disabled={!canEditDashboard}>
                       W-
@@ -324,7 +334,7 @@ export function DashboardPage() {
                     </button>
                   </div>
                 </header>
-                {definition.render()}
+                {definition.render({ width: layout.width, height: layout.height, config: layout.config })}
               </article>
             );
           })}
@@ -333,8 +343,8 @@ export function DashboardPage() {
 
       <section className="layout-editor">
         <div>
-          <h2>Dashboard layout JSON</h2>
-          <p>{canEditDashboard ? status : "You can view this dashboard. Editing requires dashboard.edit permission."}</p>
+          <h2>{t("dashboard.layoutJson")}</h2>
+          <p>{canEditDashboard ? status : t("dashboard.readOnly")}</p>
         </div>
         <textarea
           value={rawJson}
@@ -343,7 +353,7 @@ export function DashboardPage() {
           disabled={!canEditDashboard}
         />
         <button type="button" onClick={applyJson} disabled={!canEditDashboard}>
-          Apply JSON Preview
+          {t("dashboard.applyJson")}
         </button>
       </section>
     </section>

@@ -3,12 +3,14 @@ import { useEffect, useMemo, useState } from "react";
 import { apiRequest } from "../../shared/api/client";
 import type { Asset, AssetCategory, AssetStatus, UpsertAssetRequest } from "../../shared/api/types";
 import { useAuth } from "../../shared/hooks/useAuth";
+import { useLocalization } from "../../shared/i18n/LocalizationProvider";
 import { AssetForm, assetCategories, assetStatuses, createEmptyAsset } from "./AssetForm";
 
 type AssetMode = "list" | "create" | "edit" | "detail";
 
 export function AssetsPage() {
   const { token, user } = useAuth();
+  const { t } = useLocalization();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [draft, setDraft] = useState<UpsertAssetRequest>(createEmptyAsset());
@@ -16,7 +18,7 @@ export function AssetsPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<AssetCategory | "">("");
   const [status, setStatus] = useState<AssetStatus | "">("");
-  const [message, setMessage] = useState("Assets module ready.");
+  const [message, setMessage] = useState(t("assets.ready"));
 
   const canEditAssets = user?.permissions.includes("assets.edit") ?? false;
 
@@ -47,7 +49,7 @@ export function AssetsPage() {
     try {
       const result = await apiRequest<Asset[]>(`/assets${queryString}`, { token });
       setAssets(result);
-      setMessage(`${result.length} asset${result.length === 1 ? "" : "s"} loaded.`);
+      setMessage(t("assets.loaded", { count: result.length }));
     } catch (error) {
       setMessage(getErrorMessage(error));
     }
@@ -142,17 +144,17 @@ export function AssetsPage() {
     <section className="assets-page">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">Assets</p>
-          <h1>Asset management foundation</h1>
+          <p className="eyebrow">{t("assets.eyebrow")}</p>
+          <h1>{t("assets.title")}</h1>
         </div>
         <div className="asset-actions">
           <button type="button" onClick={loadAssets}>
             <RefreshCw size={17} />
-            Refresh
+            {t("common.refresh")}
           </button>
           <button className="primary-button" type="button" onClick={startCreate} disabled={!canEditAssets}>
             <Plus size={18} />
-            Add Asset
+            {t("assets.add")}
           </button>
         </div>
       </div>
@@ -163,14 +165,14 @@ export function AssetsPage() {
             <label>
               <span>
                 <Search size={15} />
-                Search
+                {t("common.search")}
               </span>
-              <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Code, name, area..." />
+              <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t("assets.searchPlaceholder")} />
             </label>
             <label>
-              Category
+              {t("assets.category")}
               <select value={category} onChange={(event) => setCategory(event.target.value as AssetCategory | "")}>
-                <option value="">All categories</option>
+                <option value="">{t("assets.allCategories")}</option>
                 {assetCategories.map((item) => (
                   <option key={item} value={item}>
                     {item}
@@ -179,9 +181,9 @@ export function AssetsPage() {
               </select>
             </label>
             <label>
-              Status
+              {t("common.status")}
               <select value={status} onChange={(event) => setStatus(event.target.value as AssetStatus | "")}>
-                <option value="">All statuses</option>
+                <option value="">{t("assets.allStatuses")}</option>
                 {assetStatuses.map((item) => (
                   <option key={item} value={item}>
                     {item}
@@ -195,12 +197,12 @@ export function AssetsPage() {
             <table className="asset-table">
               <thead>
                 <tr>
-                  <th>Code</th>
-                  <th>Name</th>
-                  <th>Category</th>
-                  <th>Status</th>
-                  <th>Area</th>
-                  <th>Actions</th>
+                  <th>{t("assets.code")}</th>
+                  <th>{t("assets.name")}</th>
+                  <th>{t("assets.category")}</th>
+                  <th>{t("common.status")}</th>
+                  <th>{t("assets.area")}</th>
+                  <th>{t("common.actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -230,7 +232,7 @@ export function AssetsPage() {
                 ))}
                 {assets.length === 0 && (
                   <tr>
-                    <td colSpan={6}>No assets match the current filters.</td>
+                    <td colSpan={6}>{t("assets.noMatches")}</td>
                   </tr>
                 )}
               </tbody>
@@ -242,21 +244,21 @@ export function AssetsPage() {
         <section className="asset-detail-panel">
           {mode === "create" && (
             <>
-              <h2>Add Asset</h2>
-              <AssetForm value={draft} onChange={setDraft} onSubmit={createAsset} onCancel={() => setMode("list")} submitLabel="Create Asset" />
+              <h2>{t("assets.addTitle")}</h2>
+              <AssetForm value={draft} onChange={setDraft} onSubmit={createAsset} onCancel={() => setMode("list")} submitLabel={t("assets.create")} />
             </>
           )}
           {mode === "edit" && selectedAsset && (
             <>
-              <h2>Edit Asset</h2>
-              <AssetForm value={draft} onChange={setDraft} onSubmit={updateAsset} onCancel={() => setMode("detail")} submitLabel="Save Asset" />
+              <h2>{t("assets.editTitle")}</h2>
+              <AssetForm value={draft} onChange={setDraft} onSubmit={updateAsset} onCancel={() => setMode("detail")} submitLabel={t("assets.save")} />
             </>
           )}
           {mode === "detail" && selectedAsset && (
             <AssetDetail asset={selectedAsset} onEdit={() => startEdit(selectedAsset)} canEdit={canEditAssets} />
           )}
           {mode === "list" && (
-            <div className="empty-state compact">Select an asset or create a new one.</div>
+            <div className="empty-state compact">{t("assets.selectOrCreate")}</div>
           )}
         </section>
       </section>
@@ -265,6 +267,7 @@ export function AssetsPage() {
 }
 
 function AssetDetail({ asset, canEdit, onEdit }: { asset: Asset; canEdit: boolean; onEdit: () => void }) {
+  const { t } = useLocalization();
   return (
     <div className="asset-detail">
       <div className="asset-detail-header">
@@ -274,36 +277,36 @@ function AssetDetail({ asset, canEdit, onEdit }: { asset: Asset; canEdit: boolea
         </div>
         <button type="button" onClick={onEdit} disabled={!canEdit}>
           <Edit size={16} />
-          Edit
+          {t("common.edit")}
         </button>
       </div>
       <dl>
         <div>
-          <dt>Code</dt>
+          <dt>{t("assets.code")}</dt>
           <dd>{asset.code}</dd>
         </div>
         <div>
-          <dt>Status</dt>
+          <dt>{t("common.status")}</dt>
           <dd>{asset.status}</dd>
         </div>
         <div>
-          <dt>Area</dt>
+          <dt>{t("assets.area")}</dt>
           <dd>{asset.area || "-"}</dd>
         </div>
         <div>
-          <dt>Manufacturer</dt>
+          <dt>{t("assets.manufacturer")}</dt>
           <dd>{asset.manufacturer || "-"}</dd>
         </div>
         <div>
-          <dt>Model</dt>
+          <dt>{t("assets.model")}</dt>
           <dd>{asset.model || "-"}</dd>
         </div>
         <div>
-          <dt>Serial Number</dt>
+          <dt>{t("assets.serialNumber")}</dt>
           <dd>{asset.serialNumber || "-"}</dd>
         </div>
         <div className="wide">
-          <dt>Notes</dt>
+          <dt>{t("assets.notes")}</dt>
           <dd>{asset.notes || "-"}</dd>
         </div>
       </dl>
