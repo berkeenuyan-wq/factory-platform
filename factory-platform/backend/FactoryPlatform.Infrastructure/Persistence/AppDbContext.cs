@@ -12,6 +12,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
     public DbSet<Module> Modules => Set<Module>();
+    public DbSet<Asset> Assets => Set<Asset>();
     public DbSet<DashboardLayout> DashboardLayouts => Set<DashboardLayout>();
     public DbSet<UserSettings> UserSettings => Set<UserSettings>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
@@ -47,6 +48,19 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             entity.Property(x => x.Key).HasMaxLength(80);
             entity.Property(x => x.Name).HasMaxLength(120);
             entity.Property(x => x.Route).HasMaxLength(160);
+        });
+
+        modelBuilder.Entity<Asset>(entity =>
+        {
+            entity.HasIndex(x => x.Code).IsUnique();
+            entity.Property(x => x.Code).HasMaxLength(80);
+            entity.Property(x => x.Name).HasMaxLength(180);
+            entity.Property(x => x.Area).HasMaxLength(120);
+            entity.Property(x => x.Manufacturer).HasMaxLength(160);
+            entity.Property(x => x.Model).HasMaxLength(160);
+            entity.Property(x => x.SerialNumber).HasMaxLength(160);
+            entity.Property(x => x.Category).HasConversion<string>().HasMaxLength(40);
+            entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(40);
         });
 
         modelBuilder.Entity<DashboardLayout>()

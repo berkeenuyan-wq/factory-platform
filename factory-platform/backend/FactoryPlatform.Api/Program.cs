@@ -1,13 +1,17 @@
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using FactoryPlatform.Application.Abstractions;
+using FactoryPlatform.Application.Assets;
 using FactoryPlatform.Application.Audit;
 using FactoryPlatform.Application.Auth;
 using FactoryPlatform.Application.Dashboard;
 using FactoryPlatform.Application.Modules;
 using FactoryPlatform.Application.Settings;
 using FactoryPlatform.Application.Users;
+using FactoryPlatform.Domain.Entities;
+using FactoryPlatform.Domain.Enums;
 using FactoryPlatform.Infrastructure;
 using FactoryPlatform.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -18,6 +22,10 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
@@ -44,6 +52,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("CanEditDashboard", policy => policy.RequireClaim("permission", "dashboard.edit"));
+    options.AddPolicy("CanEditAssets", policy => policy.RequireClaim("permission", "assets.edit"));
 });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -164,6 +173,145 @@ api.MapGet("/modules", async (AppDbContext dbContext, CancellationToken cancella
 
     return Results.Ok(modules);
 }).RequireAuthorization();
+
+api.MapGet("/assets", async (
+    string? search,
+    AssetCategory? category,
+    AssetStatus? status,
+    AppDbContext dbContext,
+    CancellationToken cancellationToken) =>
+{
+    var query = dbContext.Assets.AsNoTracking().AsQueryable();
+
+    if (!string.IsNullOrWhiteSpace(search))
+    {
+        var term = search.Trim().ToLower();
+        query = query.Where(x =>
+            x.Code.ToLower().Contains(term) ||
+            x.Name.ToLower().Contains(term) ||
+            x.Area.ToLower().Contains(term) ||
+            x.Manufacturer.ToLower().Contains(term) ||
+            x.Model.ToLower().Contains(term) ||
+            x.SerialNumber.ToLower().Contains(term));
+    }
+
+    if (category is not null)
+    {
+        query = query.Where(x => x.Category == category);
+    }
+
+    if (status is not null)
+    {
+        query = query.Where(x => x.Status == status);
+    }
+
+    var assets = await query
+        .OrderBy(x => x.Code)
+        .Select(x => AssetHelpers.ToDto(x))
+        .ToListAsync(cancellationToken);
+
+    return Results.Ok(assets);
+})
+.RequireAuthorization()
+.WithTags("Assets")
+.WithSummary("List assets with optional search, category, and status filters.");
+
+api.MapGet("/assets/{id:guid}", async (Guid id, AppDbContext dbContext, CancellationToken cancellationToken) =>
+{
+    var asset = await dbContext.Assets.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    return asset is null ? Results.NotFound() : Results.Ok(AssetHelpers.ToDto(asset));
+})
+.RequireAuthorization()
+.WithTags("Assets")
+.WithSummary("Get one asset by id.");
+
+api.MapPost("/assets", async (
+    ClaimsPrincipal principal,
+    UpsertAssetRequest request,
+    AppDbContext dbContext,
+    CancellationToken cancellationToken) =>
+{
+    var validation = AssetHelpers.Validate(request);
+    if (validation is not null)
+    {
+        return Results.BadRequest(validation);
+    }
+
+    var exists = await dbContext.Assets.AnyAsync(x => x.Code == request.Code.Trim(), cancellationToken);
+    if (exists)
+    {
+        return Results.Conflict($"Asset code '{request.Code.Trim()}' already exists.");
+    }
+
+    var asset = new Asset();
+    AssetHelpers.Apply(asset, request);
+    dbContext.Assets.Add(asset);
+    AssetHelpers.AddAudit(dbContext, principal.GetUserId(), "asset.created", asset.Id);
+
+    await dbContext.SaveChangesAsync(cancellationToken);
+    return Results.Created($"/api/assets/{asset.Id}", AssetHelpers.ToDto(asset));
+})
+.RequireAuthorization("CanEditAssets")
+.WithTags("Assets")
+.WithSummary("Create an asset.");
+
+api.MapPut("/assets/{id:guid}", async (
+    Guid id,
+    ClaimsPrincipal principal,
+    UpsertAssetRequest request,
+    AppDbContext dbContext,
+    CancellationToken cancellationToken) =>
+{
+    var validation = AssetHelpers.Validate(request);
+    if (validation is not null)
+    {
+        return Results.BadRequest(validation);
+    }
+
+    var asset = await dbContext.Assets.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    if (asset is null)
+    {
+        return Results.NotFound();
+    }
+
+    var code = request.Code.Trim();
+    var duplicate = await dbContext.Assets.AnyAsync(x => x.Id != id && x.Code == code, cancellationToken);
+    if (duplicate)
+    {
+        return Results.Conflict($"Asset code '{code}' already exists.");
+    }
+
+    AssetHelpers.Apply(asset, request);
+    AssetHelpers.AddAudit(dbContext, principal.GetUserId(), "asset.updated", asset.Id);
+
+    await dbContext.SaveChangesAsync(cancellationToken);
+    return Results.Ok(AssetHelpers.ToDto(asset));
+})
+.RequireAuthorization("CanEditAssets")
+.WithTags("Assets")
+.WithSummary("Update an asset.");
+
+api.MapDelete("/assets/{id:guid}", async (
+    Guid id,
+    ClaimsPrincipal principal,
+    AppDbContext dbContext,
+    CancellationToken cancellationToken) =>
+{
+    var asset = await dbContext.Assets.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    if (asset is null)
+    {
+        return Results.NotFound();
+    }
+
+    dbContext.Assets.Remove(asset);
+    AssetHelpers.AddAudit(dbContext, principal.GetUserId(), "asset.deleted", asset.Id);
+    await dbContext.SaveChangesAsync(cancellationToken);
+
+    return Results.NoContent();
+})
+.RequireAuthorization("CanEditAssets")
+.WithTags("Assets")
+.WithSummary("Delete an asset.");
 
 api.MapGet("/dashboard/layout", async (ClaimsPrincipal principal, AppDbContext dbContext, CancellationToken cancellationToken) =>
 {
@@ -392,5 +540,65 @@ internal static class DashboardHelpers
     {
         var normalized = name.Trim();
         return string.IsNullOrWhiteSpace(normalized) ? "Untitled Dashboard" : normalized;
+    }
+}
+
+internal static class AssetHelpers
+{
+    public static AssetDto ToDto(Asset asset)
+    {
+        return new AssetDto(
+            asset.Id,
+            asset.Code,
+            asset.Name,
+            asset.Category,
+            asset.Area,
+            asset.Manufacturer,
+            asset.Model,
+            asset.SerialNumber,
+            asset.Status,
+            asset.Notes,
+            asset.CreatedAtUtc,
+            asset.UpdatedAtUtc);
+    }
+
+    public static string? Validate(UpsertAssetRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Code))
+        {
+            return "Asset code is required.";
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            return "Asset name is required.";
+        }
+
+        return null;
+    }
+
+    public static void Apply(Asset asset, UpsertAssetRequest request)
+    {
+        asset.Code = request.Code.Trim();
+        asset.Name = request.Name.Trim();
+        asset.Category = request.Category;
+        asset.Area = request.Area.Trim();
+        asset.Manufacturer = request.Manufacturer.Trim();
+        asset.Model = request.Model.Trim();
+        asset.SerialNumber = request.SerialNumber.Trim();
+        asset.Status = request.Status;
+        asset.Notes = request.Notes.Trim();
+        asset.UpdatedAtUtc = DateTime.UtcNow;
+    }
+
+    public static void AddAudit(AppDbContext dbContext, Guid userId, string action, Guid assetId)
+    {
+        dbContext.AuditLogs.Add(new AuditLog
+        {
+            UserId = userId,
+            Action = action,
+            EntityName = "Asset",
+            EntityId = assetId.ToString()
+        });
     }
 }

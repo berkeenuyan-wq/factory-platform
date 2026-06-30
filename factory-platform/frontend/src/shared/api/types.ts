@@ -37,3 +37,40 @@ export type AuditLog = {
   userId?: string;
   createdAtUtc: string;
 };
+
+export type AssetCategory =
+  | "Machine"
+  | "Tank"
+  | "Pump"
+  | "Valve"
+  | "Motor"
+  | "Instrument"
+  | "Panel"
+  | "PLC"
+  | "HMI"
+  | "Wire";
+
+export type AssetStatus =
+  | "Planned"
+  | "Installed"
+  | "Commissioning"
+  | "Active"
+  | "Maintenance"
+  | "OutOfService";
+
+export type Asset = {
+  id: string;
+  code: string;
+  name: string;
+  category: AssetCategory;
+  area: string;
+  manufacturer: string;
+  model: string;
+  serialNumber: string;
+  status: AssetStatus;
+  notes: string;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+};
+
+export type UpsertAssetRequest = Omit<Asset, "id" | "createdAtUtc" | "updatedAtUtc">;

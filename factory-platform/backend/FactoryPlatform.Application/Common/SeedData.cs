@@ -7,6 +7,7 @@ public static class SeedData
         "dashboard.view",
         "dashboard.edit",
         "assets.view",
+        "assets.edit",
         "commissioning.view",
         "maintenance.view",
         "warehouse.view",

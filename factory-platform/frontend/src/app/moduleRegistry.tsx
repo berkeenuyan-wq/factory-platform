@@ -10,6 +10,7 @@ import {
   Wrench
 } from "lucide-react";
 import type { ComponentType } from "react";
+import { AssetsPage } from "../modules/assets/AssetsPage";
 import { DashboardPage } from "../modules/dashboard/DashboardPage";
 import { UnderDevelopmentPage } from "../shared/components/UnderDevelopmentPage";
 
@@ -39,7 +40,7 @@ export const moduleRegistry: FrontendModule[] = [
     route: "/assets",
     icon: Gauge,
     permissions: ["assets.view"],
-    component: () => <UnderDevelopmentPage moduleName="Assets" />
+    component: AssetsPage
   },
   {
     key: "commissioning",

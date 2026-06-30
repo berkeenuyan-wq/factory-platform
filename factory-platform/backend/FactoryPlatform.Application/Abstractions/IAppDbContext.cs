@@ -11,6 +11,7 @@ public interface IAppDbContext
     DbSet<Permission> Permissions { get; }
     DbSet<RolePermission> RolePermissions { get; }
     DbSet<Module> Modules { get; }
+    DbSet<Asset> Assets { get; }
     DbSet<DashboardLayout> DashboardLayouts { get; }
     DbSet<UserSettings> UserSettings { get; }
     DbSet<AuditLog> AuditLogs { get; }

@@ -19,7 +19,8 @@ body {
 
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
 }
 
@@ -243,7 +244,11 @@ p {
 .logout-button,
 .layout-editor button,
 .widget-library button,
-.new-dashboard button {
+.new-dashboard button,
+.asset-actions button,
+.form-actions button,
+.asset-detail-header button,
+.row-actions button {
   padding: 0 14px;
   border: 1px solid #2f4053;
   color: #e7edf4;
@@ -459,6 +464,218 @@ textarea:disabled {
   background: #101821;
 }
 
+.empty-state.compact {
+  min-height: 180px;
+}
+
+.asset-actions,
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.asset-actions button,
+.form-actions button,
+.asset-detail-header button,
+.row-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+.asset-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(360px, 0.75fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.asset-panel,
+.asset-detail-panel {
+  min-width: 0;
+  border: 1px solid #223243;
+  border-radius: 8px;
+  background: #101821;
+}
+
+.asset-panel {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.asset-detail-panel {
+  padding: 18px;
+}
+
+.asset-filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 180px 180px;
+  gap: 10px;
+}
+
+.asset-filters label,
+.asset-form label {
+  display: grid;
+  gap: 7px;
+  color: #cbd5e1;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.asset-filters label span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.asset-filters input,
+.asset-filters select,
+.asset-form input,
+.asset-form select,
+.asset-form textarea {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid #2f4053;
+  border-radius: 6px;
+  color: #e7edf4;
+  background: #0c141d;
+}
+
+.asset-filters input,
+.asset-filters select,
+.asset-form input,
+.asset-form select {
+  padding: 0 10px;
+}
+
+.asset-form textarea {
+  min-height: 110px;
+  padding: 10px;
+  resize: vertical;
+}
+
+.asset-table-wrap {
+  overflow-x: auto;
+}
+
+.asset-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.asset-table th,
+.asset-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #223243;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.asset-table th {
+  color: #91a4b7;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+
+.asset-table td {
+  color: #e7edf4;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 9px;
+  border: 1px solid #2f4053;
+  border-radius: 999px;
+  color: #a7f3d0;
+  background: #0d1e19;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.row-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.row-actions button {
+  width: 34px;
+  min-height: 32px;
+  padding: 0;
+}
+
+.asset-message {
+  margin: 0;
+  color: #91a4b7;
+}
+
+.asset-form {
+  display: grid;
+  gap: 14px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.asset-detail {
+  display: grid;
+  gap: 16px;
+}
+
+.asset-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.asset-detail-header h2,
+.asset-detail-panel h2 {
+  margin-bottom: 0;
+}
+
+.asset-detail dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.asset-detail dl div {
+  min-height: 74px;
+  padding: 12px;
+  border: 1px solid #223243;
+  border-radius: 6px;
+  background: #0c141d;
+}
+
+.asset-detail dl div.wide {
+  grid-column: 1 / -1;
+}
+
+.asset-detail dt {
+  color: #91a4b7;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.asset-detail dd {
+  margin: 6px 0 0;
+  color: #f8fafc;
+}
+
 @media (max-width: 900px) {
   .app-shell {
     grid-template-columns: 1fr;
@@ -506,6 +723,23 @@ textarea:disabled {
   }
 
   .page-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .asset-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .asset-filters,
+  .form-grid,
+  .asset-detail dl {
+    grid-template-columns: 1fr;
+  }
+
+  .asset-actions,
+  .form-actions,
+  .asset-detail-header {
     align-items: stretch;
     flex-direction: column;
   }
